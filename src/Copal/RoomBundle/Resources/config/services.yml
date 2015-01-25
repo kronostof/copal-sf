@@ -1,0 +1,18 @@
+parameters:
+#    copal_room.example.class: Copal\RoomBundle\Example
+
+services:
+#    copal_room.example:
+#        class: %copal_room.example.class%
+#        arguments: [@service_id, "plain_value", %parameter%]
+    copal_room.admin.talker:
+        class: Copal\RoomBundle\Admin\TalkerAdmin
+        arguments: [~, Copal\RoomBundle\Entity\Talker, CopalRoomBundle:TalkerAdmin]
+        tags:
+            - {name: sonata.admin, manager_type: orm, group: room, label: Talker}
+
+    copal_room.admin.hub:
+        class: Copal\RoomBundle\Admin\HubAdmin
+        arguments: [~, Copal\RoomBundle\Entity\Hub, CopalRoomBundle:HubAdmin]
+        tags:
+            - {name: sonata.admin, manager_type: orm, group: room, label: Hub}

@@ -1,0 +1,24 @@
+parameters:
+#    copal_colab.example.class: Copal\ColabBundle\Example
+
+services:
+#    copal_colab.example:
+#        class: %copal_colab.example.class%
+#        arguments: [@service_id, "plain_value", %parameter%]
+    copal_colab.admin.ct:
+        class: Copal\ColabBundle\Admin\CtAdmin
+        arguments: [~, Copal\ColabBundle\Entity\Ct, CopalColabBundle:CtAdmin]
+        tags:
+            - {name: sonata.admin, manager_type: orm, group: colab, label: Ct}
+
+    copal_colab.admin.project:
+        class: Copal\ColabBundle\Admin\ProjectAdmin
+        arguments: [~, Copal\ColabBundle\Entity\Project, CopalColabBundle:ProjectAdmin]
+        tags:
+            - {name: sonata.admin, manager_type: orm, group: colab, label: Project}
+
+    copal_colab.block.service.ct_list:
+        class: Copal\ColabBundle\Block\CtListBlockService
+        arguments: [~, Copal\ColabBundle\B\Ct]
+        tags:
+            - { name: sonata.block }

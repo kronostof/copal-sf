@@ -1,0 +1,3 @@
+copal_colab_homepage:
+    path:     /hello/{name}
+    defaults: { _controller: CopalColabBundle:Default:index }

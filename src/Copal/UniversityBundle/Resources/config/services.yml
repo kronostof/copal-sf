@@ -1,0 +1,18 @@
+parameters:
+#    copal_university.example.class: Copal\UniversityBundle\Example
+
+services:
+#    copal_university.example:
+#        class: %copal_university.example.class%
+#        arguments: [@service_id, "plain_value", %parameter%]
+    copal_university.admin.teacher:
+        class: Copal\UniversityBundle\Admin\TeacherAdmin
+        arguments: [~, Copal\UniversityBundle\Entity\Teacher, CopalUniversityBundle:TeacherAdmin]
+        tags:
+            - {name: sonata.admin, manager_type: orm, group: university, label: Teacher}
+
+    copal_university.admin.student:
+        class: Copal\UniversityBundle\Admin\StudentAdmin
+        arguments: [~, Copal\UniversityBundle\Entity\Student, CopalUniversityBundle:StudentAdmin]
+        tags:
+            - {name: sonata.admin, manager_type: orm, group: university, label: Student}
