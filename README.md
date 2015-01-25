@@ -1,3 +1,4 @@
+# copal-sf
 Symfony Standard Edition
 ========================
 
