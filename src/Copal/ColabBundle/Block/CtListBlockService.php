@@ -26,74 +26,92 @@ use Sonata\BlockBundle\Block\BaseBlockService;
 
 class CtListBlockService extends BaseBlockService {
 
-    protected $pool;
-
     /**
-     * @param string                                                     $name
-     * @param \Symfony\Bundle\FrameworkBundle\Templating\EngineInterface $templating
-     * @param \Sonata\AdminBundle\Admin\Pool                             $pool
+     * {@inheritdoc}
      */
-    public function __construct($name, EngineInterface $templating, Pool $pool) {
-        parent::__construct($name, $templating);
-
-        $this->pool = $pool;
+    public function getName()
+    {
+        return 'Ct list';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function execute(BlockContextInterface $blockContext, Response $response = null) {
-        $dashboardGroups = $this->pool->getDashboardGroups();
+    public function setDefaultSettings(OptionsResolverInterface $resolver)
+    {
+        $resolver->setDefaults(array(
+            'url'      => false,
+            'title'    => 'Ct list',
+            'template' => 'CopalColabBundle:Block:block_ct_list.html.twig',
+        ));
+    }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function buildEditForm(FormMapper $formMapper, BlockInterface $block)
+    {
+        $formMapper->add('settings', 'sonata_type_immutable_array', array(
+            'keys' => array(
+                array('url', 'url', array('required' => false)),
+                array('title', 'text', array('required' => false)),
+            )
+        ));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validateBlock(ErrorElement $errorElement, BlockInterface $block)
+    {
+        $errorElement
+            ->with('settings[url]')
+                ->assertNotNull(array())
+                ->assertNotBlank()
+            ->end()
+            ->with('settings[title]')
+                ->assertNotNull(array())
+                ->assertNotBlank()
+                ->assertMaxLength(array('limit' => 50))
+            ->end();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function execute(BlockContextInterface $blockContext, Response $response = null)
+    {
+        // merge settings
         $settings = $blockContext->getSettings();
 
-        $visibleGroups = array();
-        foreach ($dashboardGroups as $name => $dashboardGroup) {
-            if (!$settings['groups'] || in_array($name, $settings['groups'])) {
-                $visibleGroups[] = $dashboardGroup;
+        $feeds = false;
+        if ($settings['url']) {
+            $options = array(
+                'http' => array(
+                    'user_agent' => 'Sonata/RSS Reader',
+                    'timeout' => 2,
+                )
+            );
+
+            // retrieve contents with a specific stream context to avoid php errors
+            $content = @file_get_contents($settings['url'], false, stream_context_create($options));
+
+            if ($content) {
+                // generate a simple xml element
+                try {
+                    $feeds = new \SimpleXMLElement($content);
+                    $feeds = $feeds->channel->item;
+                } catch (\Exception $e) {
+                    // silently fail error
+                }
             }
         }
 
-        return $this->renderPrivateResponse($this->pool->getTemplate('list_block'), array(
-                    'block' => $blockContext->getBlock(),
-                    'settings' => $settings,
-                    'admin_pool' => $this->pool,
-                    'groups' => $visibleGroups
-                        ), $response);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function validateBlock(ErrorElement $errorElement, BlockInterface $block) {
-        // TODO: Implement validateBlock() method.
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function buildEditForm(FormMapper $formMapper, BlockInterface $block) {
-        
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getName() {
-        return 'ct_list';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setDefaultSettings(OptionsResolverInterface $resolver) {
-        $resolver->setDefaults(array(
-            'groups' => false
-        ));
-
-        $resolver->setAllowedTypes(array(
-            'groups' => array('bool', 'array')
-        ));
+        return $this->renderResponse($blockContext->getTemplate(), array(
+            'feeds'     => $feeds,
+            'block'     => $blockContext->getBlock(),
+            'settings'  => $settings
+        ), $response);
     }
 
 }

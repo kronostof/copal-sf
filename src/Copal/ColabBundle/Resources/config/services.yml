@@ -19,6 +19,6 @@ services:
 
     copal_colab.block.service.ct_list:
         class: Copal\ColabBundle\Block\CtListBlockService
-        arguments: [~, Copal\ColabBundle\B\Ct]
+        arguments: [ Copal\ColabBundle\Block\Ct,  @templating]
         tags:
             - { name: sonata.block }
